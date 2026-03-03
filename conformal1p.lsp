@@ -1,7 +1,7 @@
 ;;;;   Graphical Helmert's transformation
 ;;;;   ----------------------------------
-(defun C:conformal1p ( / lun lup aun aup ang ib1 ib2 x1 y1 X2 Y2
-		     q ib xt1 yt1 Xt2 Yt2 t1 t2 dx dy ir Xx Yy xr yr
+(defun C:conformal1p ( / lun lup aun aup ang ib1 ib2 x1 y1 h1 X2 Y2 H2
+		             q ib xt1 yt1 ht1 Xt2 Yt2 Ht2 t1 t2 dx dy dh ir Xx Yy xr yr
                      a1 a2 b1 2b c1 c2 sa1 sa2 sb1 sb2 sc1 sc2
                      at bt qt wt wtr wtd scl et)
 
@@ -21,16 +21,20 @@
   (setq ib2 (getpoint ib1 "\n 1точка Цели : "))
   (setq x1 (list (car ib1)))
   (setq y1 (list (cadr ib1)))
+  (setq h1 (list (caddr ib1)))
   (setq X2 (list (car ib2)))
   (setq Y2 (list (cadr ib2)))
+  (setq H2 (list (caddr ib2)))
   (grdraw ib1 ib2 5)
 
   (setq ib1 (getpoint "\n 2точка Источника : "))
   (setq ib2 (getpoint ib1 "\n 2точка Цели : "))
   (setq x1 (append x1 (list (car ib1))))
   (setq y1 (append y1 (list (cadr ib1))))
+  (setq h1 (append h1 (list (caddr ib1))))
   (setq X2 (append X2 (list (car ib2))))
   (setq Y2 (append Y2 (list (cadr ib2))))
+  (setq H2 (append H2 (list (caddr ib2))))
   (grdraw ib1 ib2 5)
   
   (setq q "Y"
@@ -44,8 +48,10 @@
         (setq ib2 (getpoint ib1 "\n Следующая точка Цели : "))
         (setq x1 (append x1 (list (car ib1))))
         (setq y1 (append y1 (list (cadr ib1))))
+        (setq h1 (append h1 (list (caddr ib1))))
         (setq X2 (append X2 (list (car ib2))))
         (setq Y2 (append Y2 (list (cadr ib2))))
+        (setq H2 (append H2 (list (caddr ib2))))
 	(setq ib (+ 1 ib))
         (grdraw ib1 ib2 5)
       )
@@ -54,18 +60,27 @@
 
   (setq xt1 0.0
 	yt1 0.0
+	ht1 0.0
 	Xt2 0.0
-	Yt2 0.0)
+	Yt2 0.0
+	Ht2 0.0)
   (foreach p x1 (setq xt1 (+ xt1 p)))
   (foreach p y1 (setq yt1 (+ yt1 p)))
+  (foreach p h1 (setq ht1 (+ ht1 p)))
   (foreach p X2 (setq Xt2 (+ Xt2 p)))
   (foreach p Y2 (setq Yt2 (+ Yt2 p)))
+  (foreach p H2 (setq Ht2 (+ Ht2 p)))
   (setq xt1 (/ xt1 ib))
   (setq yt1 (/ yt1 ib))
-  (setq t1 (list xt1 yt1))
-  (setq t2 (list (/ Xt2 ib) (/ Yt2 ib)))
+  (setq ht1 (/ ht1 ib))
+  (setq Xt2 (/ Xt2 ib))
+  (setq Yt2 (/ Yt2 ib))
+  (setq Ht2 (/ Ht2 ib))
+  (setq t1 (list xt1 yt1 ht1))
+  (setq t2 (list Xt2 Yt2 Ht2))
   (setq dx (- (nth 0 t2) (nth 0 t1)))
   (setq dy (- (nth 1 t2) (nth 1 t1)))
+  (setq dh (- Ht2 ht1))
   
   (grdraw t1 t2 6)
 
