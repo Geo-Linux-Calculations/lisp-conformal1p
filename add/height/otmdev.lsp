@@ -1,0 +1,23 @@
+; Text of Z for points
+
+(defun c:otmdev ( / H SSET lay osm npoint n ent pxy pz)
+ (if(and
+   (setq sset (ssget '((0 . "POINT"))))
+   (setq h (getreal "\tText height?\t\t"))
+   (setq H0 (getreal "\tHeight base?\t\t")))
+  (mapcar(function(lambda (x)
+    (setq x0 (* (- (cadddr (assoc 10 (entget x))) H0) 1000))
+	(setq x0s (rtos x0 2 0))
+	(if (> x0 0) (setq x0s (strcat "+" x0s)))
+    (entmake(list '(0 . "text")
+     (assoc 10 (entget x))(cons 40 h)
+     (cons 1 x0s)
+    ))
+   ))
+   (vl-remove-if (function listp)
+    (mapcar (function cadr) (ssnamex sset))
+   )
+  )
+ )
+ (princ)
+)
