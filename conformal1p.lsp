@@ -1,8 +1,8 @@
-;;;;   Graphical Helmert's transformation
+;;;;   Graphical conformal 1power (Helmert's) transformation
 ;;;;   ----------------------------------
 (defun C:conformal1p ( / lun lup aun aup ang pst ptt ps pt
                      q ib pms pmt pmd ir dts dsm
-                     a1 a2 b1 2b c1 c2 sa1 sa2 sb1 sb2 sc1 sc2
+                     Xt Yt xs ys sXtxs sYtys sYtxs sXtys sxsxs sysys
                      at bt qt wt wtr wtd scl et)
 
   (setq lun (getvar "LUNITS"))
@@ -23,14 +23,10 @@
   )
   (while (= q "Y")
     (progn
-      (princ "\n")
-      (princ (+ 1 ib))
-      (setq pst (getpoint " точка источника : "))
+      (setq pst (getpoint (strcat "\n" (rtos (+ 1 ib) 2 0) " point source : ")))
       (if pst
         (progn
-          (princ "\n")
-          (princ (+ 1 ib))
-          (setq ptt (getpoint pst " точка цели : "))
+          (setq ptt (getpoint pst (strcat "\n" (rtos (+ 1 ib) 2 0) " point target : ")))
         )
       )
       (setq q "N")
@@ -80,49 +76,32 @@
   
   (setq
     ir 0
-    a1 nil
-    a2 nil
-    b1 nil
-    b2 nil
-    c1 nil
-    c2 nil
+    sXtxs 0.0
+    sYtys 0.0
+    sYtxs 0.0
+    sXtys 0.0
+    sxsxs 0.0
+    sysys 0.0
   )
   (while (< ir ib)
     (setq
-      a1 (append a1 (list (* (car (nth ir dts)) (car (nth ir dsm)))))
-      a2 (append a2 (list (* (cadr (nth ir dts)) (cadr (nth ir dsm)))))
-      b1 (append b1 (list (* (cadr (nth ir dts)) (car (nth ir dsm)))))
-      b2 (append b2 (list (* (car (nth ir dts)) (cadr (nth ir dsm)))))
-      c1 (append c1 (list (* (car (nth ir dsm)) (car (nth ir dsm)))))
-      c2 (append c2 (list (* (cadr (nth ir dsm)) (cadr (nth ir dsm)))))
+      Xt (car (nth ir dts))
+      Yt (cadr (nth ir dts))
+      xs (car (nth ir dsm))
+      ys (cadr (nth ir dsm))
+      sXtxs (+ sXtxs (* Xt xs))
+      sYtys (+ sYtys (* Yt ys))
+      sYtxs (+ sYtxs (* Yt xs))
+      sXtys (+ sXtys (* Xt ys))
+      sxsxs (+ sxsxs (* xs xs))
+      sysys (+ sysys (* ys ys))
       ir (+ 1 ir)
     )
   )
 
   (setq
-    ir 0
-    sa1 0.0
-    sa2 0.0
-    sb1 0.0
-    sb2 0.0
-    sc1 0.0
-    sc2 0.0
-  )
-  (while (< ir ib)
-    (setq
-      sa1 (+ sa1 (nth ir a1))
-      sa2 (+ sa2 (nth ir a2))
-      sb1 (+ sb1 (nth ir b1))
-      sb2 (+ sb2 (nth ir b2))
-      sc1 (+ sc1 (nth ir c1))
-      sc2 (+ sc2 (nth ir c2))
-      ir (+ 1 ir)
-    )
-  )
- 
-  (setq
-    at (+ 1 (/ (+ sa1 sa2) (+ sc1 sc2)))
-    bt (/ (- sb1 sb2) (+ sc1 sc2))
+    at (+ 1 (/ (+ sXtxs sYtys) (+ sxsxs sysys)))
+    bt (/ (- sYtxs sXtys) (+ sxsxs sysys))
     qt (sqrt (+ (* at at) (* bt bt)))
     wt (atan bt at)
     wtr (* (1- 0) (/ (* 200.0 wt) pi))
@@ -136,7 +115,7 @@
     q "Y"
   )
   (initget "Y N U")
-  (setq q (getkword "\n Применить масштабирование? Yes/No_(q=1)/User  <Y> : "))
+  (setq q (getkword (strcat "\n Scale? Yes_(q=" (rtos scl 2 4) ")/No_(q=1)/User  <Y> : ")))
   (if (or (= q "n") (= q "N"))
     (setq scl 1.0)
   )
@@ -146,7 +125,7 @@
 
   (setq q "N")
   (initget "N Y")
-  (setq q (getkword "\n Сохранить оригинал? No/Yes <N> : "))
+  (setq q (getkword "\n Save origin? No/Yes <N> : "))
   (if (or (= q "y") (= q "Y"))
     (command "_copy" et "" "0,0,0" "0,0,0") 
   )
@@ -155,8 +134,9 @@
   (command "_scale" et "" "_none" pmt scl)
 
   (princ
-    (strcat "\n  dY : " (rtos (car pmd) 2 3) "    dX : " (rtos (cadr pmd) 2 3)
-     "\n  w  : " (rtos wtr 2 4) "g    " (rtos wtd 2 5) "°    q : " (rtos scl 2 8)
+    (strcat
+      "\n  dY : " (rtos (car pmd) 2 3) "    dX : " (rtos (cadr pmd) 2 3) "    dH : " (rtos (caddr pmd) 2 3)
+      "\n  w  : " (rtos wtr 2 4) "g    " (rtos wtd 2 5) "°    q : " (rtos scl 2 8)
     )
   )  
 
@@ -167,4 +147,4 @@
   (setvar "ANGDIR" ang)
 
 )
-;======Konec
+;;;;   ----------------------------------
